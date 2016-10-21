@@ -28,3 +28,9 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+*.db
+*.opendb
+/SoaFilesystem/ipch/SOAFILESYSTEM-17184753
+*.idb
+/SoaFilesystem/Debug/filesystem_file
+*.tlog
