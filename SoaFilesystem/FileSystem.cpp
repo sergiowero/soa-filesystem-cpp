@@ -8,9 +8,10 @@ using namespace std;
 
 Filesystem::Filesystem()
 {
-	cout << "File system for SOA class" << endl;
+	cout << " -----------------------------------------------------------------------------" << endl;
+	cout << " - File system for SOA class" << endl;
 	cout << " - Version 0.0.1" << endl;
-	cout << " - Author: Sergio Sanchez" << endl << endl;
+	cout << " -----------------------------------------------------------------------------" << endl;
 }
 
 Filesystem::~Filesystem()
@@ -35,10 +36,8 @@ void Filesystem::CheckFileSystem()
 		os.close();
 		cout << "[INFO] Filesystem created " << endl << endl;
 	}
- 
 
 	is.close();
-	
 }
 
 void Filesystem::Start()
@@ -46,6 +45,7 @@ void Filesystem::Start()
 	m_filesystem.open(FILESYSTEM_FILE_NAME, fstream::in | fstream::out);
 	if (m_filesystem.is_open())
 	{
+		m_filesystem.read(m_header.data, sizeof(FileSystemHeader));
 		int option = 0;
 		while (option != -1)
 		{
@@ -76,6 +76,10 @@ int Filesystem::SystemPrompt()
 	{
 		DeleteFile(file);
 	}
+	else if (command == "ls")
+	{
+		ListFiles();
+	}
 	else if (command == "clear")
 	{
 		system("cls");
@@ -99,6 +103,20 @@ void Filesystem::CreateFile(const string& file)
 		return;
 	}
 	cout << "Creating file " << file << endl << endl;
+
+	int index = 0;
+	//Find index
+	for (int i = 0; i < MAX_FILES; i++)
+	{
+		if (m_header.files[i].name[0] == '\0')
+		{
+			index = i;
+			break;
+		}
+	}
+	sprintf_s(m_header.files[index].name, file.size() + 1, "%s", file.c_str());
+
+	WriteFileSystemHeader();
 }
 
 void Filesystem::DeleteFile(const string& file)
@@ -108,5 +126,44 @@ void Filesystem::DeleteFile(const string& file)
 		cout << "[ERROR] DeleteFile: File name not specified" << endl << endl;
 		return;
 	}
-	cout << "Deleting file " << file << endl << endl;
+	bool found = false;
+	for (int i = 0; i < MAX_FILES; i++)
+	{
+		if (strcmp(m_header.files[i].name, file.c_str()) == 0)
+		{
+			cout << "Deleting file " << file << endl << endl;
+			m_header.files[i].name[0] = '\0';
+			found = true;
+			break;
+		}
+	}
+	
+	if (!found)
+	{
+		cout << "File \"" << file << "\" not found" << endl << endl;
+	} 
+	else
+	{
+		WriteFileSystemHeader();
+	}
+}
+
+void Filesystem::ListFiles()
+{
+	for (int i = 0; i < MAX_FILES; i++)
+	{
+		if(m_header.files[i].name[0] != '\0')
+		{
+			cout << " - " << m_header.files[i].name << endl;
+		}
+	}
+
+	cout << endl;
+}
+
+void Filesystem::WriteFileSystemHeader()
+{
+	m_filesystem.seekg(0);
+	m_filesystem.write(m_header.data, sizeof(FileSystemHeader));
+	m_filesystem.flush();
 }

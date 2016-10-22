@@ -5,6 +5,19 @@
 #include <iostream>
 #include <fstream>
 
+// sizeof(FileDesc) == 64
+struct FileDesc
+{
+	long offset;
+	char name[56];
+};
+
+union FileSystemHeader
+{
+	FileDesc files[128];
+	char data[8192];
+};
+
 class Filesystem
 {
 public:
@@ -21,23 +34,15 @@ public:
 private:
 
 	std::fstream m_filesystem;
+	FileSystemHeader m_header;
 
 	int SystemPrompt();
 	void CreateFile(const std::string& file);
 	void DeleteFile(const std::string& file);
-
+	void ListFiles();
+	void WriteFileSystemHeader();
 };
 
-// sizeof(FileDesc) == 64
-struct FileDesc
-{
-	long offset;
-	char name[56];
-};
 
-struct FileSystemHeader
-{
-	FileDesc files[128];
-};
 
 #endif // _FILESYSTEM_H_
